@@ -211,7 +211,7 @@ void VisionViewer::readCameraFrame(bool is_right) {
     bool flag = 0;
     uint8_t idx = 0;
     cv::Mat frame;
-    while(!_should_stop) {
+    while(true) {
         auto time_start = ::getCurrentTimePoint();
 
         flag = cap.read(frame);
@@ -254,13 +254,13 @@ void VisionViewer::show() {
     while(!_should_stop) {
         _sem_show.take();
 
+        idx = _tri_frame_prop[0].getNewestIndex();
+        imleft = _frames[0][idx].clone();
+        idx = _tri_frame_prop[1].getNewestIndex();
+        imright = _frames[1][idx].clone();
+
         // Display 3D
         if(!is_mono && has_3d) {
-            idx = _tri_frame_prop[0].getNewestIndex();
-            imleft = _frames[0][idx].clone();
-            idx = _tri_frame_prop[1].getNewestIndex();
-            imright = _frames[1][idx].clone();
-
             for(auto& win_info : _win_info_3d) {
                 int win_width = win_info.win_width;
                 int win_height = win_info.win_height;
@@ -268,6 +268,9 @@ void VisionViewer::show() {
                 int new_width = round(_imwidth * scale);
                 int x_half_devia = (win_width - new_width) / 2;;
                 cv::Size cvsize = cv::Size(new_width, win_height);
+
+                // printf("win size:%dx%d, scale:%f, x_half_devia:%d\n",
+                //     win_width, win_height, scale, x_half_devia);
 
                 cv::Mat imbino = cv::Mat(win_height, win_width*2, CV_8UC3, cv::Scalar(0, 0, 0));
                 int start = x_half_devia;
@@ -281,8 +284,7 @@ void VisionViewer::show() {
 
         // Display 2D
         if(has_2d) {
-            idx = _tri_frame_prop[is_show_right].getNewestIndex();
-            image = _frames[is_show_right][idx].clone();
+            image = is_show_right ? imright : imleft;
 
             for(auto& win_name : _win_names_2d) {
                 cv::imshow(win_name, image);
@@ -337,10 +339,7 @@ void VisionViewer::writeVideo() {
     int max_minutes = 5;
     uint8_t idx = 0;
     while(true) {
-        if(!_should_write) {
-            continue;
-        }
-        // _sem_write.take();
+        _sem_write.take();
 
         if(is_mono) {
             idx = _tri_frame_prop[0].getNewestIndex();

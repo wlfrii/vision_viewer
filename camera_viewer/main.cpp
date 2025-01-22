@@ -51,7 +51,9 @@ int main(int argc, char* argv[])
         option.index[1] = cam_id[1];
         printf("CameraViewer: specify binocular, cam_id1: %d, cam_id2: %d.\n", 
             cam_id[0], cam_id[1]);
-    }    
+    }
+    option.imwidth = 1920;
+    option.imheight = 1080;
 
     int opt;
     std::string optstring = "w:h:n:";
