@@ -27,3 +27,6 @@ add_subdirectory(video_viewer)
 
 # Add camera_viewer
 add_subdirectory(camera_viewer)
+
+# Add converter
+add_subdirectory(video_converter)
